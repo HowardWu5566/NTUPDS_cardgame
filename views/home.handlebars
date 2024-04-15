@@ -1,1 +1,28 @@
-<p>Home Page</p>
+{{!-- <p>Home Page</p> --}}
+
+{{> header}}
+
+<main class="flex-container">
+  <div class="">
+    <button class="btn" onclick="selectLevel()">開始挑戰</button>
+    <a href="/ranking" class="btn">英雄榜</a>
+  </div>
+  <div>
+    <a href="/game?level=easy" class="btn level-btn hidden">簡單</a>
+    <a href="/game?level=medium" class="btn level-btn hidden">中等</a>
+    <a href="/game?level=hard" class="btn level-btn hidden">困難</a>
+  </div>
+</main>
+
+{{> footer}}
+
+<script>
+  function selectLevel() {
+    const levelButtons = document.querySelectorAll('.level-btn')
+    levelButtons.forEach(button => {
+      if (button.classList.contains('hidden')) {
+        button.classList.remove('hidden')
+      }
+    })
+  }
+</script>
