@@ -57,6 +57,99 @@ main {
   visibility: hidden;
 }
 
+.invisible {
+  display: none;
+}
+
+#score {
+  margin-bottom: 50px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  /* text-decoration: none; */
+}
+
+.card-area {
+  display: grid;
+  justify-content: center;
+  align-content: center;
+
+  /* temp */
+  background-color: #D2B48C; 
+}
+
+.card-area-easy {
+  grid-gap: 16px;
+  grid-template-columns: repeat(3, calc((85vh * 0.5 - 100px) * 2 / 3));
+}
+
+.card-area-medium {
+  grid-gap: 12px;
+  grid-template-columns: repeat(4, calc((85vh * 0.33 - 20px) * 2 / 3));
+}
+
+.card-area-hard {
+  grid-gap: 8px;
+  grid-template-columns: repeat(6,calc((85vh * 0.25 - 20px) * 2 / 3));
+}
+
+.card {
+  border-radius: 10px;
+  background-color: white;
+  transform-style: preserve-3d;
+  position: relative;
+  transition: transform 1s;
+  cursor: pointer;
+}
+
+.card-easy {
+  height: calc(85vh * 0.5 - 100px);
+  width: calc(85vh * 0.5 - 100px) * 2 / 3;
+  
+}
+.card-medium {
+  height: calc(85vh * 0.33 - 20px);
+  width: calc((85vh * 0.33 - 20px) * 2 / 3);
+}
+
+.card-hard {
+  height: calc(85vh * 0.25 - 20px);
+  width: calc((85vh * 0.25 - 20px) * 2 / 3);
+}
+
+.card > div {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 1s;
+}
+
+.card-back {
+  background-image: url('https://i.imgur.com/T5qJf8v.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.card-front {
+  transform: rotateY(180deg) translateZ(1px);
+  background-color: white;
+}
+
+.card-front img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
 
 /* temp */
 header p {

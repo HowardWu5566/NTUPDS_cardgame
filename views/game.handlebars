@@ -1,7 +1,32 @@
 {{> header}}
 
 <main class="flex-container">
-  <p>Game Page</p>
+  <div class="role-num invisible">{{game.roleNum}}</div>
+  <p id="score">Score: 0</p>
+
+  <div class="card-area card-area-{{game.level}}">
+    {{#each game.cards}}
+    <div class="card card-{{../game.level}}">
+      <div class="card-inner card-back"></div>
+      {{#if front.name}}
+      <div class="card-inner card-front" data-id={{this.id}}>{{this.front.name}}</div>
+      {{else}}
+      <div class="card-inner card-front" data-id={{this.id}}>
+        <img src="{{this.front.image}}" alt="正面圖">
+      </div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+
 </main>
 
 {{> footer}}
+
+<script>
+  document.querySelectorAll('.card-inner').forEach(card => {
+  card.addEventListener('click', event => {
+    card.parentNode.classList.toggle('flipped')
+  })
+})
+</script>

@@ -16,10 +16,11 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.get('/game', async (req: Request, res: Response) => {
-  const game = new Game('easy')
+  const level: string = req.query.level as string
+  const game = new Game(level)
   await game.start()
 
-  return res.render('game')
+  return res.render('game', { game })
 })
 
 app.listen(3000, () => {
