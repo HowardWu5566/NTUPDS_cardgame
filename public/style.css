@@ -151,6 +151,10 @@ main {
   transform: rotateY(180deg);
 }
 
+.card-inner.lock {
+  filter: brightness(0.5)
+}
+
 /* temp */
 header p {
   margin: 0;
