@@ -1,0 +1,25 @@
+{{> header}}
+
+<main id="ranking" class="flex-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each masterArr}}
+      <tr>
+        <td>{{this.rank}}</td>
+        <td>{{this.name}}</td>
+        <td>{{this.score}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <a href="/" class="btn">返回</a>
+</main>
+
+{{> footer}}

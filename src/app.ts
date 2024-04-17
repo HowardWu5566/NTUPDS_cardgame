@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import { engine } from 'express-handlebars'
-import { getData } from './config/connect'
 import { Game } from './models/Game'
+import { Ranking } from './models/Ranking'
 require('dotenv').config()
 
 const app = express()
@@ -21,6 +21,13 @@ app.get('/game', async (req: Request, res: Response) => {
   await game.start()
 
   return res.render('game', { game })
+})
+
+app.get('/ranking', async (req: Request, res: Response) => {
+  const ranking = new Ranking()
+  const masterArr = await ranking.getRanking()
+
+  return res.render('ranking', { masterArr })
 })
 
 app.listen(3000, () => {
