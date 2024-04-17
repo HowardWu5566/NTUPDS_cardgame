@@ -1,11 +1,57 @@
+const level = new URLSearchParams(window.location.search).get('level')
 const revealedCards = []
 let matchPair = 0
+const scoring = {
+  score: 0,
+  // 難度 hard 根據用時計分
+  startTime: undefined,
+  endTime: undefined,
+  elapsedTime: 0,
+  hasFlipped: false,
+
+  startTimer: function () {
+    this.startTime = Date.now()
+    this.hasFlipped = this.hasFlipped ? this.hasFlipped : true
+  },
+
+  stopTimer: function () {
+    this.endTime = Date.now()
+    this.elapsedTime = this.endTime - this.startTime
+  },
+
+  updateScore: function (isMatch) {
+    switch (level) {
+      case 'easy':
+        this.score += isMatch ? 10 : -1
+        break
+      case 'medium':
+        this.score += isMatch ? 30 : -3
+        break
+      case 'hard': // 20 ~ 100 分
+        this.score += isMatch
+          ? Math.floor(Math.max(20, 100 - this.elapsedTime / 100))
+          : 0
+        break
+      default:
+        break
+    }
+    if (this.score < 0) {
+      this.score = 0
+    }
+
+    document.querySelector('#score').textContent = `Score: ${this.score}`
+  }
+}
 
 function flipCard(card) {
   if (!card.classList.contains('card-back')) return
-  card.parentNode.classList.add('flipped')
 
+  card.parentNode.classList.add('flipped')
   revealedCards.push(card.nextElementSibling)
+
+  if (level === 'hard' && !scoring.hasFlipped) {
+    scoring.startTimer()
+  }
 
   if (revealedCards.length % 2 === 0) {
     setTimeout(checkIfMatch, 1000)
@@ -19,16 +65,22 @@ function checkIfMatch() {
     revealedCards[0].classList.add('lock')
     revealedCards[1].classList.add('lock')
 
-    matchPair++
+    if (level === 'hard') {
+      scoring.stopTimer()
+    }
 
-    checkIfGameOver()
+    matchPair++
   } else {
     revealedCards[0].parentNode.classList.remove('flipped')
     revealedCards[1].parentNode.classList.remove('flipped')
   }
 
+  scoring.updateScore(isMatch)
+
   revealedCards.shift()
   revealedCards.shift()
+
+  checkIfGameOver()
 }
 
 function checkIfGameOver() {
@@ -36,12 +88,31 @@ function checkIfGameOver() {
   const isGameOver = matchPair === Number(puppetNum)
 
   if (isGameOver) {
-    console.log('Game Over')
-    //TODO: add modal when game is over
+    showGameoverModal()
+  } else if (level === 'hard') {
+    scoring.startTimer()
   }
 }
 
-//TODO: scoring rule
+function showGameoverModal() {
+  const gameoverModal = document.querySelector('#gameover-modal')
+  const gameoverModalContent = document.querySelector('#gameover-modal-content')
+
+  gameoverModalContent.innerHTML = `
+    <p>挑戰成功，獲得${scoring.score}分</p>
+    <div>
+      <a href="/game?level=${level}" class="modal-btn">再次挑戰</a>
+      <a href="/" class="modal-btn back">　返回　</a>
+    </div>
+    `
+  gameoverModal.style.display = 'block'
+
+  const backBtn = document.querySelector('.back')
+  backBtn.onclick = () => {
+    gameoverModal.style.display = 'none'
+  }
+}
+
 //TODO: ranking
 
 document.querySelectorAll('.card-inner').forEach(card => {
