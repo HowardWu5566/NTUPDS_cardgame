@@ -94,17 +94,33 @@ function checkIfGameOver() {
   }
 }
 
-function showGameoverModal() {
+async function showGameoverModal() {
   const gameoverModal = document.querySelector('#gameover-modal')
   const gameoverModalContent = document.querySelector('#gameover-modal-content')
 
-  gameoverModalContent.innerHTML = `
+  const threshold = await getThreshold()
+  const isMaster = scoring.score > threshold
+
+  if (isMaster) {
+    gameoverModalContent.innerHTML = `
+      <p>挑戰成功，獲得${scoring.score}分</p>
+      <p>恭喜榮登英雄榜</p>
+      <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
+        <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name">
+        <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
+        <button type="submit" class="modal-btn">　確定　</button>
+      </form>
+      `
+  } else {
+    gameoverModalContent.innerHTML = `
     <p>挑戰成功，獲得${scoring.score}分</p>
     <div>
       <a href="/game?level=${level}" class="modal-btn">再次挑戰</a>
       <a href="/" class="modal-btn back">　返回　</a>
     </div>
     `
+  }
+
   gameoverModal.style.display = 'block'
 
   const backBtn = document.querySelector('.back')
@@ -113,7 +129,15 @@ function showGameoverModal() {
   }
 }
 
-//TODO: ranking
+function getThreshold() {
+  return fetch('/threshold')
+    .then(res => {
+      return res.json()
+    })
+    .catch(err => {
+      console.error(err)
+    })
+}
 
 document.querySelectorAll('.card-inner').forEach(card => {
   card.addEventListener('click', () => {

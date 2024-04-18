@@ -6,6 +6,8 @@ require('dotenv').config()
 
 const app = express()
 
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 app.engine('handlebars', engine())
 app.set('view engine', 'handlebars')
 app.set('views', './views')
@@ -28,6 +30,22 @@ app.get('/ranking', async (req: Request, res: Response) => {
   const masterArr = await ranking.getRanking()
 
   return res.render('ranking', { masterArr })
+})
+
+app.post('/ranking', async (req: Request, res: Response) => {
+  const ranking = new Ranking()
+  const { name, score } = req.body
+
+  await ranking.postRanking(name, Number(score))
+  await ranking.organize()
+
+  return res.redirect('/ranking')
+})
+
+app.get('/threshold', async (req: Request, res: Response) => {
+  const ranking = new Ranking()
+  const threshold = await ranking.getThreshold()
+  return res.status(200).json(threshold)
 })
 
 app.listen(3000, () => {
