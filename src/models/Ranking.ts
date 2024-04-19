@@ -22,7 +22,7 @@ export class Ranking {
       while (this._masterArr.length < this._RANKING_LENGTH) {
         this._masterArr.push(
           new Master({
-            rank: this._masterArr.length,
+            rank: this._masterArr.length + 1,
             name: '虛位以待'
           })
         )
@@ -49,7 +49,7 @@ export class Ranking {
     try {
       const sheet = await getSheet(Number(process.env.RANKING_SHEET_ID))
       const time = this._getTime()
-      name = name ? name : '隱士高人'
+      name = name ? name : '隱世高人'
       await sheet.addRow({ name, score, time })
     } catch (err) {
       console.error(err)
