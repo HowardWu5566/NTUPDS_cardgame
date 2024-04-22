@@ -257,3 +257,7 @@ th, td {
   color: #fff;
   text-align: center;
 }
+
+footer > small {
+  color: #fff
+}
