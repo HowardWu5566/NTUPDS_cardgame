@@ -7,24 +7,13 @@
   </div>
   <div>
     <button class="btn" onclick="selectLevel()">開始挑戰</button>
-    <a href="/ranking" class="btn">英雄榜</a>
+    <button class="btn" onclick="getPage('/ranking')">英雄榜</button>
   </div>
   <div>
-    <a href="/game?level=easy" class="btn level-btn hidden">簡單</a>
-    <a href="/game?level=medium" class="btn level-btn hidden">中等</a>
-    <a href="/game?level=hard" class="btn level-btn hidden">困難</a>
+    <button class="btn level-btn hidden" onclick="start('easy')">簡單</button>
+    <button class="btn level-btn hidden" onclick="start('medium')">中等</button>
+    <button class="btn level-btn hidden" onclick="start('hard')">困難</button>
   </div>
 </main>
 
 {{> footer}}
-
-<script>
-  function selectLevel() {
-    const levelButtons = document.querySelectorAll('.level-btn')
-    levelButtons.forEach(button => {
-      if (button.classList.contains('hidden')) {
-        button.classList.remove('hidden')
-      }
-    })
-  }
-</script>
