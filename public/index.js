@@ -30,3 +30,10 @@ function postRanking() {
   disableBtns('.modal-btn')
   form.submit()
 }
+
+function showSocialMedias() {
+  const socialMediaBtns = document.querySelectorAll('.socialmedia')
+  socialMediaBtns.forEach(button => {
+    button.classList.toggle('hidden')
+  })
+}
