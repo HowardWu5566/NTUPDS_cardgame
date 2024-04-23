@@ -106,7 +106,8 @@ async function showGameoverModal() {
       <p>挑戰成功，獲得${scoring.score}分</p>
       <p>恭喜榮登英雄榜</p>
       <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
-        <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name">
+        <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name" maxlength="10">
+        <span id="name-error">名號太冗長</span>
         <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
         <button type="submit" class="modal-btn" onclick="postRanking()">　確定　</button>
       </form>
@@ -122,6 +123,7 @@ async function showGameoverModal() {
   }
 
   gameoverModal.style.display = 'block'
+  showNameErrMsg()
 }
 
 function getThreshold() {
@@ -132,6 +134,19 @@ function getThreshold() {
     .catch(err => {
       console.error(err)
     })
+}
+
+function showNameErrMsg() {
+  const inputName = document.querySelector('.input-name')
+  const errMsg = document.querySelector('#name-error')
+
+  inputName.addEventListener('keydown', function () {
+    if (this.value.length >= 10) {
+      errMsg.style.visibility = 'visible'
+    } else {
+      errMsg.style.visibility = 'hidden'
+    }
+  })
 }
 
 document.querySelectorAll('.card-inner').forEach(card => {
