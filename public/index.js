@@ -7,6 +7,23 @@ function selectLevel() {
   })
 }
 
+function showSocialMedias() {
+  const socialMediaBtns = document.querySelectorAll('.socialmedia')
+  socialMediaBtns.forEach(button => {
+    button.classList.toggle('hidden')
+  })
+}
+
+function load() {
+  disableBtns('.btn')
+  disableBtns('.modal-btn')
+
+  const body = document.querySelector('body')
+  const loadingMsg = document.querySelector('#loading-msg')
+  body.classList.add('loading')
+  loadingMsg.style.display = 'block'
+}
+
 function disableBtns(element) {
   const btns = document.querySelectorAll(element)
   btns.forEach(btn => {
@@ -14,26 +31,35 @@ function disableBtns(element) {
   })
 }
 
+function enableBtns(element) {
+  const btns = document.querySelectorAll(element)
+  btns.forEach(btn => {
+    btn.disabled = false
+  })
+}
+
 function getPage(href) {
-  disableBtns('.btn')
-  disableBtns('.modal-btn')
+  load()
   window.location.href = href
 }
 
 function start(level) {
-  disableBtns('.btn')
+  load()
   window.location.href = `/game?level=${level}`
 }
 
 function postRanking() {
+  load()
+
   const form = document.querySelector('#post-ranking')
-  disableBtns('.modal-btn')
   form.submit()
 }
 
-function showSocialMedias() {
-  const socialMediaBtns = document.querySelectorAll('.socialmedia')
-  socialMediaBtns.forEach(button => {
-    button.classList.toggle('hidden')
-  })
-}
+window.addEventListener('unload', function () {
+  const body = document.querySelector('body')
+  const loadingMsg = document.querySelector('#loading-msg')
+  body.classList.remove('loading')
+  loadingMsg.style.display = 'none'
+  enableBtns('.btn')
+  enableBtns('.modal-btn')
+})
