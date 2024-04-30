@@ -88,6 +88,7 @@ function checkIfGameOver() {
   const isGameOver = matchPair === Number(puppetNum)
 
   if (isGameOver) {
+    showLoadingMsg()
     showGameoverModal()
   } else if (level === 'hard') {
     scoring.startTimer()
@@ -101,6 +102,7 @@ async function showGameoverModal() {
   const threshold = await getThreshold()
   const isMaster = scoring.score > threshold
 
+  rmLoadingMsg()
   if (isMaster) {
     gameoverModalContent.innerHTML = `
       <p>挑戰成功，獲得${scoring.score}分</p>
@@ -109,7 +111,7 @@ async function showGameoverModal() {
         <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name" maxlength="10">
         <span id="name-error">名號太冗長</span>
         <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
-        <button type="submit" class="modal-btn" onclick="postRanking()">　確定　</button>
+        <button type="submit" class="modal-btn" onclick="postRanking()">確定</button>
       </form>
       `
   } else {
@@ -117,7 +119,7 @@ async function showGameoverModal() {
     <p>挑戰成功，獲得${scoring.score}分</p>
     <div>
       <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
-      <button class="modal-btn" onclick="getPage('/')">　返回　</button>
+      <button class="modal-btn" onclick="getPage('/')">返回</button>
     </div>
     `
   }

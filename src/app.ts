@@ -5,6 +5,7 @@ import { Ranking } from './models/Ranking'
 require('dotenv').config()
 
 const app = express()
+const PORT = Number(process.env.PORT) || 3000
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
@@ -86,6 +87,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   return res.status(500).render('error', { errMsg })
 })
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log('listening on port 3000')
 })

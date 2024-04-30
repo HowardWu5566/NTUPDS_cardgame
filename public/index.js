@@ -14,7 +14,7 @@ function showSocialMedias() {
   })
 }
 
-function load() {
+function showLoadingMsg() {
   disableBtns('.btn')
   disableBtns('.modal-btn')
 
@@ -22,6 +22,13 @@ function load() {
   const loadingMsg = document.querySelector('#loading-msg')
   body.classList.add('loading')
   loadingMsg.style.display = 'block'
+}
+
+function rmLoadingMsg() {
+  const body = document.querySelector('body')
+  const loadingMsg = document.querySelector('#loading-msg')
+  body.classList.remove('loading')
+  loadingMsg.style.display = 'none'
 }
 
 function disableBtns(element) {
@@ -39,17 +46,17 @@ function enableBtns(element) {
 }
 
 function getPage(href) {
-  load()
+  showLoadingMsg()
   window.location.href = href
 }
 
 function start(level) {
-  load()
+  showLoadingMsg()
   window.location.href = `/game?level=${level}`
 }
 
 function postRanking() {
-  load()
+  showLoadingMsg()
 
   const form = document.querySelector('#post-ranking')
   form.submit()
