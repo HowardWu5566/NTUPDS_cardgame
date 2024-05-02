@@ -45,6 +45,7 @@ const scoring = {
 
 function flipCard(card) {
   if (!card.classList.contains('card-back')) return
+  if (card.parentNode.classList.contains('flipped')) return
 
   card.parentNode.classList.add('flipped')
   revealedCards.push(card.nextElementSibling)
@@ -77,8 +78,7 @@ function checkIfMatch() {
 
   scoring.updateScore(isMatch)
 
-  revealedCards.shift()
-  revealedCards.shift()
+  revealedCards.splice(0, 2)
 
   checkIfGameOver()
 }
@@ -151,7 +151,7 @@ function showNameErrMsg() {
   })
 }
 
-document.querySelectorAll('.card-inner').forEach(card => {
+document.querySelectorAll('.card-back').forEach(card => {
   card.addEventListener('click', () => {
     flipCard(card)
   })
