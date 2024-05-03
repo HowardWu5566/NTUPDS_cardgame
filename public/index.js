@@ -55,13 +55,6 @@ function start(level) {
   window.location.href = `/game?level=${level}`
 }
 
-function postRanking() {
-  showLoadingMsg()
-
-  const form = document.querySelector('#post-ranking')
-  form.submit()
-}
-
 window.addEventListener('unload', function () {
   const body = document.querySelector('body')
   const loadingMsg = document.querySelector('#loading-msg')

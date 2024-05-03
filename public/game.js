@@ -109,9 +109,9 @@ async function showGameoverModal() {
       <p>恭喜榮登英雄榜</p>
       <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
         <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name" maxlength="10">
-        <span id="name-error">名號太冗長</span>
+        <span id="name-error"></span>
         <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
-        <button type="submit" class="modal-btn" onclick="postRanking()">確定</button>
+        <button type="submit" class="modal-btn" onclick="postRanking(event)">確定</button>
       </form>
       `
   } else {
@@ -125,7 +125,6 @@ async function showGameoverModal() {
   }
 
   gameoverModal.style.display = 'block'
-  showNameErrMsg()
 }
 
 function getThreshold() {
@@ -138,17 +137,30 @@ function getThreshold() {
     })
 }
 
-function showNameErrMsg() {
-  const inputName = document.querySelector('.input-name')
-  const errMsg = document.querySelector('#name-error')
+function checkName() {
+  const name = document.querySelector('.input-name').value.trim()
 
-  inputName.addEventListener('keydown', function () {
-    if (this.value.length >= 10) {
+  if (name.length > 10) {
+    return '名號太冗長'
+  } else if (bannedNames.includes(name)) {
+    return '請更換名號'
+  }
+}
+
+function postRanking(event) {
+  const form = document.querySelector('#post-ranking')
+  const errMsg = document.querySelector('#name-error')
+  const message = checkName()
+  event.preventDefault()
+
+  if (message) {
+    errMsg.textContent = message
       errMsg.style.visibility = 'visible'
-    } else {
-      errMsg.style.visibility = 'hidden'
+    return
     }
-  })
+
+  showLoadingMsg()
+  form.submit()
 }
 
 document.querySelectorAll('.card-back').forEach(card => {

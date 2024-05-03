@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express'
 import { engine } from 'express-handlebars'
 import { Game } from './models/Game'
 import { Ranking } from './models/Ranking'
+import bannedNames = require('../config/banned_names.js')
+
 require('dotenv').config()
 
 const app = express()
@@ -12,6 +14,7 @@ app.use(express.json())
 app.engine('handlebars', engine())
 app.set('view engine', 'handlebars')
 app.set('views', './views')
+app.use(express.static('config'))
 app.use(express.static('public'))
 
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
@@ -53,6 +56,8 @@ app.post(
       const { name, score } = req.body
       if (name.length > 10) {
         return res.status(400).render('error', { errMsg: '不得超過 10 字元' })
+      } else if (bannedNames.includes(name.trim())) {
+        return res.status(400).render('error', { errMsg: '請更換名號' })
       }
 
       await ranking.postRanking(name, Number(score))
