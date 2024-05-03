@@ -151,6 +151,7 @@ function getThreshold() {
 }
 
 function checkName() {
+  const bannedNames = ['虛位以待']
   const name = document.querySelector('.input-name').value.trim()
 
   if (name.length > 10) {
