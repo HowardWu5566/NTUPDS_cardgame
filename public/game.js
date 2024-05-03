@@ -1,9 +1,11 @@
 const level = new URLSearchParams(window.location.search).get('level')
 const revealedCards = []
+const totalPair = Number(document.querySelector('.puppet-num').textContent)
 let matchPair = 0
 const scoring = {
   score: 0,
-  // 難度 hard 根據用時計分
+  // 難度 hard 根據用時及次數計分
+  flipTime: 0,
   startTime: undefined,
   endTime: undefined,
   elapsedTime: 0,
@@ -27,11 +29,16 @@ const scoring = {
       case 'medium':
         this.score += isMatch ? 30 : -3
         break
-      case 'hard': // 20 ~ 100 分
-        this.score += isMatch
-          ? Math.floor(Math.max(20, 100 - this.elapsedTime / 100))
-          : 0
+      case 'hard': // 最低 20 分
+        const timeFactor = Math.max(20, 100 - this.elapsedTime / 100)
+        const accuracyFactor = Math.max(
+          1,
+          (totalPair - matchPair - this.flipTime) * 0.25 + 1
+        )
+
+        this.score += Math.floor(timeFactor * accuracyFactor)
         break
+
       default:
         break
     }
@@ -68,29 +75,35 @@ function checkIfMatch() {
 
     if (level === 'hard') {
       scoring.stopTimer()
+      scoring.flipTime++
     }
 
     matchPair++
+    scoring.updateScore(isMatch)
+
+    checkIfGameOver()
   } else {
     revealedCards[0].parentNode.classList.remove('flipped')
     revealedCards[1].parentNode.classList.remove('flipped')
+
+    if (level === 'hard') {
+      scoring.flipTime++
+    } else {
+      scoring.updateScore(isMatch)
+    }
   }
 
-  scoring.updateScore(isMatch)
-
   revealedCards.splice(0, 2)
-
-  checkIfGameOver()
 }
 
 function checkIfGameOver() {
-  const puppetNum = document.querySelector('.puppet-num').textContent
-  const isGameOver = matchPair === Number(puppetNum)
+  const isGameOver = matchPair === totalPair
 
   if (isGameOver) {
     showLoadingMsg()
     showGameoverModal()
   } else if (level === 'hard') {
+    scoring.flipTime = 0
     scoring.startTimer()
   }
 }
@@ -155,9 +168,9 @@ function postRanking(event) {
 
   if (message) {
     errMsg.textContent = message
-      errMsg.style.visibility = 'visible'
+    errMsg.style.visibility = 'visible'
     return
-    }
+  }
 
   showLoadingMsg()
   form.submit()
