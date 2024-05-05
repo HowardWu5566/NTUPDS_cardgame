@@ -41,7 +41,7 @@ body {
 }
 
 header {
-  height: 10vh;
+  height: 70px;
 }
 
 header > .flex-container {
@@ -92,7 +92,7 @@ ul li a {
 }
 
 footer {
-  height: 5vh;
+  height: 35px;
 }
 
 main {
@@ -214,10 +214,11 @@ main {
 
 .modal {
   display: none;
-  position: fixed;
-  z-index: 15;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 15%;
+  z-index: 2;
+  width: 50%;
+  margin: 100px auto;
 }
 
 .modal-content {
@@ -225,11 +226,9 @@ main {
   flex-direction: column;
   align-items: center;
   background-color: #F2D8B1;
-  margin: 15% auto;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-  width: 50%;
 }
 
 .modal-content p {
@@ -244,6 +243,7 @@ main {
   margin-bottom: 0px;
   border: none;
   border-radius: 20px;
+  width: 100%;
   font-size: 20px;
   text-align: center;
   background-color :  rgba(255,255,255, 0.5);
@@ -374,10 +374,8 @@ footer > small {
 }
 
 /* z-index:
-
-15: .modal
-10: #loading-msg
- 5: .loading::before
--1: #background-image
-
+  10: #loading-msg
+   5: .loading::before
+   2: .modal
+  -1: #background-image
 */
