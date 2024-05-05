@@ -5,6 +5,8 @@ import { JWT } from 'google-auth-library'
 
 require('dotenv').config()
 
+let rawPuppetRows: GoogleSpreadsheetRow<Record<string, any>>[] = []
+
 export async function getSheet(sheetId: number) {
   const serviceAccountAuth = new JWT({
     email: process.env.CLIENT_EMAIL,
@@ -30,3 +32,9 @@ export async function getData(sheetId: number) {
   rows = await sheet.getRows()
   return rows
 }
+
+;(async () => {
+  rawPuppetRows = await getData(Number(process.env.PUPPET_SHEET_ID))
+})()
+
+export { rawPuppetRows }

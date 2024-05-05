@@ -1,6 +1,6 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { getData } from '../config/connect'
+import { getData, rawPuppetRows } from '../config/connect'
 import { Puppet } from './Puppet'
 import { Card } from './Card'
 
@@ -24,16 +24,9 @@ export class Game {
   }
 
   async start() {
-    const rawRows = await this.getRawRows()
-    const puppetArr = this.getpuppetRows(rawRows)
+    const puppetArr = this.getpuppetRows(rawPuppetRows)
     this.generateCards(puppetArr)
     this.shuffle()
-  }
-
-  async getRawRows() {
-    const puppetSheetId: number = Number(process.env.PUPPET_SHEET_ID)
-    const rawRows = await getData(puppetSheetId)
-    return rawRows
   }
 
   getpuppetRows(rawRows: GoogleSpreadsheetRow[]) {
