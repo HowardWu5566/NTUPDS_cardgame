@@ -44,14 +44,17 @@ header {
   height: 70px;
 }
 
-header > .flex-container {
+header > .flex-container, footer > .flex-container {
   width: 70%;
   height: 100%;
   margin: 0 auto;
-  border-bottom: 1px solid #ccc;
   flex-direction: row;
   justify-content: space-between;
   align-items: center
+}
+
+header > .flex-container {
+  border-bottom: 1px solid #ccc;
 }
 
 #header-logo {
@@ -216,7 +219,7 @@ main {
   display: none;
   position: absolute;
   top: 15%;
-  z-index: 2;
+  z-index: 15;
   width: 50%;
   margin: 100px auto;
 }
@@ -291,7 +294,7 @@ td:nth-child(2) {
   width: 50%;
 }
 
-footer > small {
+footer > .flex-container > small {
   color: #fff;
 }
 
@@ -302,7 +305,7 @@ footer > small {
 }
 
 @media (max-width: 768px) {
-  header > .flex-container {
+  header > .flex-container, footer > .flex-container {
     width: 100%;
   }
 
@@ -373,9 +376,15 @@ footer > small {
   }
 }
 
+@media print {
+  .card {
+    display: none;
+  }
+}
+
 /* z-index:
+  15: .modal
   10: #loading-msg
    5: .loading::before
-   2: .modal
   -1: #background-image
 */

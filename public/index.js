@@ -50,7 +50,7 @@ function getPage(href) {
   window.location.href = href
 }
 
-function start(level) {
+function getGame(level) {
   showLoadingMsg()
   window.location.href = `/game?level=${level}`
 }
