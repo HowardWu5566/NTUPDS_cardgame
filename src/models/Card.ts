@@ -1,9 +1,9 @@
 export class Card {
-  id: number
+  randNum: number
   front: { name: string } | { image: string }
 
-  constructor(id: number, front: { name: string } | { image: string }) {
-    this.id = id
+  constructor(randNum: number, front: { name: string } | { image: string }) {
+    this.randNum = randNum
     this.front = front
   }
 }

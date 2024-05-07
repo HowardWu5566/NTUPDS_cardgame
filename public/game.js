@@ -3,22 +3,24 @@ const revealedCards = []
 const totalPair = Number(document.querySelector('.puppet-num').textContent)
 let matchPair = 0
 const scoring = {
+  TIME_LIMIT: 30000, // 30s
   score: 0,
   // 難度 hard 根據用時及次數計分
   flipTime: 0,
-  startTime: undefined,
-  endTime: undefined,
-  elapsedTime: 0,
-  hasFlipped: false,
+  pairStartingTime: undefined,
+  pairEndingTime: undefined,
+  pairElapsedTime: 0,
 
   startTimer: function () {
-    this.startTime = Date.now()
-    this.hasFlipped = this.hasFlipped ? this.hasFlipped : true
+    this.pairStartingTime = Date.now()
   },
 
   stopTimer: function () {
-    this.endTime = Date.now()
-    this.elapsedTime = this.endTime - this.startTime
+    this.pairEndingTime = Date.now()
+    this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
+    if (this.pairElapsedTime > this.TIME_LIMIT) {
+      showGameoverModal(false)
+    }
   },
 
   updateScore: function (isMatch) {
@@ -30,7 +32,7 @@ const scoring = {
         this.score += isMatch ? 30 : -3
         break
       case 'hard': // 最低 20 分
-        const timeFactor = Math.max(20, 100 - this.elapsedTime / 100)
+        const timeFactor = Math.max(20, 100 - this.pairElapsedTime / 100)
         const accuracyFactor = Math.max(
           1,
           (totalPair - matchPair - this.flipTime) * 0.25 + 1
@@ -50,6 +52,18 @@ const scoring = {
   }
 }
 
+function start() {
+  document.querySelectorAll('.card-back').forEach(card => {
+    card.addEventListener('click', () => {
+      flipCard(card)
+    })
+  })
+
+  if (level === 'hard') {
+    scoring.startTimer()
+  }
+}
+
 function flipCard(card) {
   if (!card.classList.contains('card-back')) return
   if (card.parentNode.classList.contains('flipped')) return
@@ -57,17 +71,27 @@ function flipCard(card) {
   card.parentNode.classList.add('flipped')
   revealedCards.push(card.nextElementSibling)
 
-  if (level === 'hard' && !scoring.hasFlipped) {
-    scoring.startTimer()
-  }
-
   if (revealedCards.length % 2 === 0) {
     setTimeout(checkIfMatch, 1000)
   }
 }
 
 function checkIfMatch() {
-  const isMatch = revealedCards[0].dataset.id === revealedCards[1].dataset.id
+  const primeArr = [
+    // length = 25, length should larger than total puppetnum - 11
+    101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+    179, 181, 191, 193, 197, 199, 211, 223, 227, 229
+  ]
+  let minId = Infinity
+  document.querySelectorAll('.card-front').forEach(card => {
+    if (Number(card.dataset.randnum) < minId) {
+      minId = Number(card.dataset.randnum)
+    }
+  })
+
+  const isMatch =
+    revealedCards[0].dataset.randnum % primeArr[minId] ===
+    revealedCards[1].dataset.randnum % primeArr[minId]
 
   if (isMatch) {
     revealedCards[0].classList.add('lock')
@@ -108,16 +132,17 @@ function checkIfGameOver() {
   }
 }
 
-async function showGameoverModal() {
+async function showGameoverModal(matchAll = true) {
   const gameoverModal = document.querySelector('#gameover-modal')
   const gameoverModalContent = document.querySelector('#gameover-modal-content')
 
-  const threshold = await getThreshold()
-  const isMaster = scoring.score > threshold
+  if (matchAll) {
+    const threshold = await getThreshold()
+    const isMaster = scoring.score > threshold
 
-  rmLoadingMsg()
-  if (isMaster) {
-    gameoverModalContent.innerHTML = `
+    rmLoadingMsg()
+    if (isMaster) {
+      gameoverModalContent.innerHTML = `
       <p>挑戰成功，獲得${scoring.score}分</p>
       <p>恭喜榮登英雄榜</p>
       <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
@@ -127,9 +152,19 @@ async function showGameoverModal() {
         <button type="submit" class="modal-btn" onclick="postRanking(event)">確定</button>
       </form>
       `
+    } else {
+      gameoverModalContent.innerHTML = `
+    <p>挑戰成功，獲得${scoring.score}分</p>
+    <div>
+      <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+      <button class="modal-btn" onclick="getPage('/')">返回</button>
+    </div>
+    `
+    }
   } else {
     gameoverModalContent.innerHTML = `
-    <p>挑戰成功，獲得${scoring.score}分</p>
+    <p>挑戰失敗</p>
+    <p>拳腳無眼，切莫東張西望！</p>
     <div>
       <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
       <button class="modal-btn" onclick="getPage('/')">返回</button>
@@ -177,8 +212,4 @@ function postRanking(event) {
   form.submit()
 }
 
-document.querySelectorAll('.card-back').forEach(card => {
-  card.addEventListener('click', () => {
-    flipCard(card)
-  })
-})
+start()

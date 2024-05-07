@@ -11,9 +11,9 @@
     <div class="card card-{{../game.level}}">
       <div class="card-inner card-back"></div>
       {{#if front.name}}
-      <div class="card-inner card-front" data-id={{this.id}}>{{this.front.name}}</div>
+      <div class="card-inner card-front" data-randnum={{this.randNum}}>{{this.front.name}}</div>
       {{else}}
-      <div class="card-inner card-front" data-id={{this.id}}>
+      <div class="card-inner card-front" data-randnum={{this.randNum}}>
         <img src="{{this.front.image}}" alt="正面圖">
       </div>
       {{/if}}

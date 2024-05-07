@@ -3,7 +3,9 @@ import { engine } from 'express-handlebars'
 import { Game } from './models/Game'
 import { Ranking } from './models/Ranking'
 
-require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
 
 const app = express()
 const PORT = Number(process.env.PORT) || 3000
@@ -23,11 +25,11 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
   }
 })
 
-app.get('/game', async (req: Request, res: Response, next: NextFunction) => {
+app.get('/game', (req: Request, res: Response, next: NextFunction) => {
   try {
     const level: string = req.query.level as string
     const game = new Game(level)
-    await game.start()
+    game.start()
 
     return res.render('game', { game })
   } catch (err) {
@@ -92,5 +94,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 app.listen(PORT, () => {
-  console.log('listening on port 3000')
+  console.log(`listening on port ${PORT}`)
 })
