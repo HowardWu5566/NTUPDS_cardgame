@@ -10,6 +10,7 @@ const scoring = {
   pairStartingTime: undefined,
   pairEndingTime: undefined,
   pairElapsedTime: 0,
+  gameElapsedTime: 0,
 
   startTimer: function () {
     this.pairStartingTime = Date.now()
@@ -18,8 +19,9 @@ const scoring = {
   stopTimer: function () {
     this.pairEndingTime = Date.now()
     this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
-    if (this.pairElapsedTime > this.TIME_LIMIT) {
-      showGameoverModal(false)
+    this.gameElapsedTime += this.pairElapsedTime
+    if (this.pairElapsedTime > this.PAIR_TIME_LIMIT) {
+      showGameoverModal('pairTimesUp')
     }
   },
 
@@ -125,23 +127,36 @@ function checkIfGameOver() {
 
   if (isGameOver) {
     showLoadingMsg()
-    showGameoverModal()
+    showGameoverModal('matchAll')
   } else if (level === 'hard') {
     scoring.flipTime = 0
     scoring.startTimer()
   }
 }
 
-async function showGameoverModal(matchAll = true) {
+async function showGameoverModal(result) {
   const gameoverModal = document.querySelector('#gameover-modal')
   const gameoverModalContent = document.querySelector('#gameover-modal-content')
 
-  if (matchAll) {
-    const threshold = await getThreshold()
-    const isMaster = scoring.score > threshold
+  rmLoadingMsg()
 
-    rmLoadingMsg()
-    if (isMaster) {
+  if (result === 'matchAll') {
+    const threshold = await getThreshold()
+    const isTimesUp =
+      typeof threshold === 'string' ||
+      threshold.gameElapsedTime > scoring.gameElapsedTime * 2
+    const isMaster = scoring.score > threshold.score
+
+    if (isTimesUp) {
+      gameoverModalContent.innerHTML = `
+      <p>挑戰失敗</p>
+      <p>疲態盡顯，應當養精蓄銳！</p>
+      <div>
+        <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+        <button class="modal-btn" onclick="getPage('/')">返回</button>
+      </div>
+      `
+    } else if (isMaster) {
       gameoverModalContent.innerHTML = `
       <p>挑戰成功，獲得${scoring.score}分</p>
       <p>恭喜榮登英雄榜</p>
@@ -161,7 +176,7 @@ async function showGameoverModal(matchAll = true) {
     </div>
     `
     }
-  } else {
+  } else if (result === 'pairTimesUp') {
     gameoverModalContent.innerHTML = `
     <p>挑戰失敗</p>
     <p>拳腳無眼，切莫東張西望！</p>

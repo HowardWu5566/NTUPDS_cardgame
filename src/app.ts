@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express'
 import { engine } from 'express-handlebars'
 import { Game } from './models/Game'
 import { Ranking } from './models/Ranking'
+import { Gametime } from './models/Gametime'
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
@@ -9,6 +10,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express()
 const PORT = Number(process.env.PORT) || 3000
+
+const gameTime = new Gametime()
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
@@ -30,6 +33,7 @@ app.get('/game', (req: Request, res: Response, next: NextFunction) => {
     const level: string = req.query.level as string
     const game = new Game(level)
     game.start()
+    gameTime.startTimer()
 
     return res.render('game', { game })
   } catch (err) {
@@ -75,9 +79,16 @@ app.get(
   '/threshold',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      gameTime.endTimer()
+      const gameElapsedTime = gameTime.getElapsedTime()
+      if (gameTime.isTimesUp()) {
+        return res.status(200).json('GameTimesUp')
+      }
+
       const ranking = new Ranking()
-      const threshold = await ranking.getThreshold()
-      return res.status(200).json(threshold)
+      const score = await ranking.getThreshold()
+
+      return res.status(200).json({ score, gameElapsedTime })
     } catch (err) {
       next(err)
     }

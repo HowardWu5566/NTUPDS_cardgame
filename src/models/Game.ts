@@ -23,7 +23,7 @@ export class Game {
     return converter[level]
   }
 
-  async start() {
+  start() {
     const puppetArr = this.getpuppetRows(rawPuppetRows)
     this.generateCards(puppetArr)
     this.shuffle()
