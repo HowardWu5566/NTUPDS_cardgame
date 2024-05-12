@@ -3,7 +3,7 @@ const revealedCards = []
 const totalPair = Number(document.querySelector('.puppet-num').textContent)
 let matchPair = 0
 const scoring = {
-  TIME_LIMIT: 30000, // 30s
+  PAIR_TIME_LIMIT: 30000, // 30s
   score: 0,
   // 難度 hard 根據用時及次數計分
   flipTime: 0,
@@ -11,17 +11,22 @@ const scoring = {
   pairEndingTime: undefined,
   pairElapsedTime: 0,
   gameElapsedTime: 0,
+  firstSightMatchFactor: 0,
 
   startTimer: function () {
-    this.pairStartingTime = Date.now()
+    if (level === 'hard') {
+      this.pairStartingTime = Date.now()
+    }
   },
 
   stopTimer: function () {
-    this.pairEndingTime = Date.now()
-    this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
-    this.gameElapsedTime += this.pairElapsedTime
-    if (this.pairElapsedTime > this.PAIR_TIME_LIMIT) {
-      showGameoverModal('pairTimesUp')
+    if (level === 'hard') {
+      this.pairEndingTime = Date.now()
+      this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
+      this.gameElapsedTime += this.pairElapsedTime
+      if (this.pairElapsedTime > this.PAIR_TIME_LIMIT) {
+        showGameoverModal('pairTimesUp')
+      }
     }
   },
 
@@ -61,9 +66,7 @@ function start() {
     })
   })
 
-  if (level === 'hard') {
-    scoring.startTimer()
-  }
+  scoring.startTimer()
 }
 
 function flipCard(card) {
@@ -79,6 +82,41 @@ function flipCard(card) {
 }
 
 function checkIfMatch() {
+  const devisor = getDevisor()
+
+  if (level === 'hard') {
+    scoring.flipTime++
+  }
+
+  const isMatch =
+    revealedCards[0].dataset.randnum % devisor ===
+    revealedCards[1].dataset.randnum % devisor
+
+  if (isMatch) {
+    revealedCards[0].classList.add('lock')
+    revealedCards[1].classList.add('lock')
+
+    scoring.stopTimer()
+
+    matchPair++
+    scoring.updateScore(isMatch)
+
+    checkIfFirstSight(isMatch)
+    checkIfGameOver()
+  } else {
+    revealedCards[0].parentNode.classList.remove('flipped')
+    revealedCards[1].parentNode.classList.remove('flipped')
+    checkIfFirstSight(isMatch)
+
+    if (level !== 'hard') {
+      scoring.updateScore(isMatch)
+    }
+  }
+
+  revealedCards.splice(0, 2)
+}
+
+function getDevisor() {
   const primeArr = [
     // length = 25, length should larger than total puppetnum - 11
     101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
@@ -90,36 +128,23 @@ function checkIfMatch() {
       minId = Number(card.dataset.randnum)
     }
   })
+  return primeArr[minId]
+}
 
-  const isMatch =
-    revealedCards[0].dataset.randnum % primeArr[minId] ===
-    revealedCards[1].dataset.randnum % primeArr[minId]
-
-  if (isMatch) {
-    revealedCards[0].classList.add('lock')
-    revealedCards[1].classList.add('lock')
-
-    if (level === 'hard') {
-      scoring.stopTimer()
-      scoring.flipTime++
-    }
-
-    matchPair++
-    scoring.updateScore(isMatch)
-
-    checkIfGameOver()
-  } else {
-    revealedCards[0].parentNode.classList.remove('flipped')
-    revealedCards[1].parentNode.classList.remove('flipped')
-
-    if (level === 'hard') {
-      scoring.flipTime++
-    } else {
-      scoring.updateScore(isMatch)
-    }
+function checkIfFirstSight(isMatch) {
+  if (
+    isMatch &&
+    !revealedCards[0].parentNode.classList.contains('shown') &&
+    !revealedCards[1].parentNode.classList.contains('shown')
+  ) {
+    scoring.firstSightMatchFactor += Math.max(
+      totalPair - matchPair - scoring.flipTime,
+      0
+    )
+  } else if (!isMatch) {
+    revealedCards[0].parentNode.classList.add('shown')
+    revealedCards[1].parentNode.classList.add('shown')
   }
-
-  revealedCards.splice(0, 2)
 }
 
 function checkIfGameOver() {
@@ -127,11 +152,20 @@ function checkIfGameOver() {
 
   if (isGameOver) {
     showLoadingMsg()
-    showGameoverModal('matchAll')
-  } else if (level === 'hard') {
-    scoring.flipTime = 0
+    checkAbnormalAccuracy()
+      ? showGameoverModal('tooAccurate')
+      : showGameoverModal('matchAll')
+  } else {
     scoring.startTimer()
+    if (level === 'hard') {
+      scoring.flipTime = 0
+    }
   }
+}
+
+function checkAbnormalAccuracy() {
+  const standard = (totalPair * (totalPair + 1)) / 6
+  return scoring.firstSightMatchFactor > standard
 }
 
 async function showGameoverModal(result) {
@@ -143,10 +177,9 @@ async function showGameoverModal(result) {
   if (result === 'matchAll') {
     const threshold = await getThreshold()
     const isTimesUp =
-      typeof threshold === 'string' ||
+      threshold === 'GameTimesUp' ||
       threshold.gameElapsedTime > scoring.gameElapsedTime * 2
     const isMaster = scoring.score > threshold.score
-
     if (isTimesUp) {
       gameoverModalContent.innerHTML = `
       <p>挑戰失敗</p>
@@ -185,8 +218,16 @@ async function showGameoverModal(result) {
       <button class="modal-btn" onclick="getPage('/')">返回</button>
     </div>
     `
+  } else if (result === 'tooAccurate') {
+    gameoverModalContent.innerHTML = `
+    <p>挑戰失敗</p>
+    <p>鴻運當頭，卻遭小人陷害</p>
+    <div>
+      <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+      <button class="modal-btn" onclick="getPage('/')">返回</button>
+    </div>
+    `
   }
-
   gameoverModal.style.display = 'block'
 }
 
