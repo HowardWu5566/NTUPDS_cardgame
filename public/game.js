@@ -93,12 +93,12 @@ function checkIfMatch() {
     revealedCards[1].dataset.randnum % devisor
 
   if (isMatch) {
+    matchPair++
+
     revealedCards[0].classList.add('lock')
     revealedCards[1].classList.add('lock')
 
     scoring.stopTimer()
-
-    matchPair++
     scoring.updateScore(isMatch)
 
     checkIfFirstSight(isMatch)
@@ -176,9 +176,13 @@ async function showGameoverModal(result) {
 
   if (result === 'matchAll') {
     const threshold = await getThreshold()
-    const isTimesUp =
-      threshold === 'GameTimesUp' ||
-      threshold.gameElapsedTime > scoring.gameElapsedTime * 2
+    let isTimesUp
+    if (level === 'hard') {
+      isTimesUp =
+        threshold === 'GameTimesUp' ||
+        threshold.gameElapsedTime > scoring.gameElapsedTime * 2
+    }
+
     const isMaster = scoring.score > threshold.score
     if (isTimesUp) {
       gameoverModalContent.innerHTML = `
