@@ -1,29 +1,19 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { getData, rawPuppetRows } from '../config/connect'
+import { rawPuppetRows } from '../config/connect'
 import { Puppet } from './Puppet'
 import { Card } from './Card'
 
-export class Game {
-  level: string
-  puppetNum: number = 0
+export abstract class Game {
+  abstract level: string
+  abstract puppetNum: number
   cards: Card[] = []
 
-  constructor(level: string) {
-    this.level = level
-    this.puppetNum = this.convertLvToNum(level)
+  constructor() {
+    // lazy initialization
   }
 
-  convertLvToNum(level: string): number {
-    const converter: Record<string, number> = {
-      easy: 3,
-      medium: 6,
-      hard: 12
-    }
-    return converter[level]
-  }
-
-  start() {
+  init() {
     const puppetArr = this.getpuppetRows(rawPuppetRows)
     this.generateCards(puppetArr)
     this.shuffle()

@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import { engine } from 'express-handlebars'
-import { Game } from './models/Game'
+import { GameLevel, EasyGame, MediumGame, HardGame } from './models/GameLevel'
 import { Ranking } from './models/Ranking'
 import { Gametime } from './models/Gametime'
 
@@ -30,9 +30,18 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.get('/game', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const level: string = req.query.level as string
-    const game = new Game(level)
-    game.start()
+    const level: GameLevel = req.query.level as GameLevel
+    const gameClasses: { [key in GameLevel]: any } = {
+      easy: EasyGame,
+      medium: MediumGame,
+      hard: HardGame
+    }
+    const GameClass = gameClasses[level]
+    if (!GameClass) {
+      throw new Error('Invalid game level')
+    }
+
+    const game = new GameClass()
     gameTime.startTimer()
 
     return res.render('game', { game })
