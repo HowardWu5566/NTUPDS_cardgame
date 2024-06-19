@@ -57,41 +57,6 @@ header > .flex-container {
   border-bottom: 1px solid #ccc;
 }
 
-.carousel {
-  align-self: flex-end;
-  text-align: center;
-  height: 20px;
-  overflow: hidden;
-}
-
-.carousel-inner {
-  animation: scroll 20s linear infinite;
-}
-
-.item {
-  height: 20px;
-  line-height: 20px;
-  color: #fff
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateY(0%);
-  }
-  45% {
-    transform: translateY(0%);
-  }
-  50% {
-    transform: translateY(-33.33%);
-  }
-  95% {
-    transform: translateY(-33.33%);
-  }
-  100% {
-    transform: translateY(-66.67%);
-  }
-}
-
 #header-logo {
   height: 100%;
   width: auto;
