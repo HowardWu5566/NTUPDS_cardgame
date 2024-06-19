@@ -1,60 +1,11 @@
 const level = new URLSearchParams(window.location.search).get('level')
 const revealedCards = []
 const totalPair = Number(document.querySelector('.puppet-num').textContent)
-let matchPair = 0
 const scoring = {
-  PAIR_TIME_LIMIT: 30000, // 30s
   score: 0,
-  // 難度 hard 根據用時及次數計分
+  matchPair: 0,
   flipTime: 0,
-  pairStartingTime: undefined,
-  pairEndingTime: undefined,
-  pairElapsedTime: 0,
-  gameElapsedTime: 0,
-  firstSightMatchFactor: 0,
-
-  startTimer: function () {
-    if (level === 'hard') {
-      this.pairStartingTime = Date.now()
-    }
-  },
-
-  stopTimer: function () {
-    if (level === 'hard') {
-      this.pairEndingTime = Date.now()
-      this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
-      this.gameElapsedTime += this.pairElapsedTime
-      if (this.pairElapsedTime > this.PAIR_TIME_LIMIT) {
-        showGameoverModal('pairTimesUp')
-      }
-    }
-  },
-
-  updateScore: function (isMatch) {
-    switch (level) {
-      case 'easy':
-        this.score += isMatch ? 10 : -1
-        break
-      case 'medium':
-        this.score += isMatch ? 30 : -3
-        break
-      case 'hard': // 最低 20 分
-        const timeFactor = Math.max(20, 100 - this.pairElapsedTime / 100)
-        const accuracyFactor = Math.max(
-          1,
-          (totalPair - matchPair - this.flipTime) * 0.25 + 1
-        )
-
-        this.score += Math.floor(timeFactor * accuracyFactor)
-        break
-
-      default:
-        break
-    }
-    if (this.score < 0) {
-      this.score = 0
-    }
-
+  update: function () {
     document.querySelector('#score').textContent = `Score: ${this.score}`
   }
 }
@@ -66,7 +17,7 @@ function start() {
     })
   })
 
-  scoring.startTimer()
+  timeSys.startTimer()
 }
 
 function flipCard(card) {
@@ -77,43 +28,46 @@ function flipCard(card) {
   revealedCards.push(card.nextElementSibling)
 
   if (revealedCards.length % 2 === 0) {
-    setTimeout(checkIfMatch, 1000)
+    setTimeout(compareTwoCards, 1000)
   }
+}
+
+function compareTwoCards() {
+  const isMatch = checkIfMatch()
+
+  scoring.flipTime++
+
+  if (isMatch) {
+    scoring.matchPair++
+
+    revealedCards[0].classList.add('lock')
+    revealedCards[1].classList.add('lock')
+
+    timeSys.stopTimer()
+    levelSettings[level].addScore()
+
+    accuracySys.checkMatch()
+    checkIfGameOver()
+  } else {
+    revealedCards[0].parentNode.classList.remove('flipped')
+    revealedCards[1].parentNode.classList.remove('flipped')
+
+    levelSettings[level].deductScore()
+
+    accuracySys.markShownCards()
+  }
+
+  scoring.update()
+  revealedCards.splice(0, 2)
 }
 
 function checkIfMatch() {
   const devisor = getDevisor()
 
-  if (level === 'hard') {
-    scoring.flipTime++
-  }
-
-  const isMatch =
+  return (
     revealedCards[0].dataset.randnum % devisor ===
     revealedCards[1].dataset.randnum % devisor
-
-  if (isMatch) {
-    matchPair++
-
-    revealedCards[0].classList.add('lock')
-    revealedCards[1].classList.add('lock')
-
-    scoring.stopTimer()
-    scoring.updateScore(isMatch)
-
-    checkIfFirstSight(isMatch)
-    checkIfGameOver()
-  } else {
-    revealedCards[0].parentNode.classList.remove('flipped')
-    revealedCards[1].parentNode.classList.remove('flipped')
-    checkIfFirstSight(isMatch)
-
-    if (level !== 'hard') {
-      scoring.updateScore(isMatch)
-    }
-  }
-
-  revealedCards.splice(0, 2)
+  )
 }
 
 function getDevisor() {
@@ -131,107 +85,84 @@ function getDevisor() {
   return primeArr[minId]
 }
 
-function checkIfFirstSight(isMatch) {
-  if (
-    isMatch &&
-    !revealedCards[0].parentNode.classList.contains('shown') &&
-    !revealedCards[1].parentNode.classList.contains('shown')
-  ) {
-    scoring.firstSightMatchFactor += Math.max(
-      totalPair - matchPair - scoring.flipTime,
-      0
-    )
-  } else if (!isMatch) {
-    revealedCards[0].parentNode.classList.add('shown')
-    revealedCards[1].parentNode.classList.add('shown')
-  }
-}
-
 function checkIfGameOver() {
-  const isGameOver = matchPair === totalPair
+  const isGameOver = scoring.matchPair === totalPair
 
   if (isGameOver) {
     showLoadingMsg()
-    checkAbnormalAccuracy()
+    accuracySys.checkIfAbnormal()
       ? showGameoverModal('tooAccurate')
       : showGameoverModal('matchAll')
   } else {
-    scoring.startTimer()
-    if (level === 'hard') {
-      scoring.flipTime = 0
-    }
+    timeSys.startTimer()
+    scoring.flipTime = 0
   }
-}
-
-function checkAbnormalAccuracy() {
-  const standard = (totalPair * (totalPair + 1)) / 6
-  return scoring.firstSightMatchFactor > standard
 }
 
 async function showGameoverModal(result) {
   const gameoverModal = document.querySelector('#gameover-modal')
   const gameoverModalContent = document.querySelector('#gameover-modal-content')
 
-  rmLoadingMsg()
-
   if (result === 'matchAll') {
     const threshold = await getThreshold()
-    let isTimesUp
-    if (level === 'hard') {
-      isTimesUp =
+    let isGameTimesUp
+    if (levelSettings[level]['enableTimeSys']) {
+      isGameTimesUp =
         threshold === 'GameTimesUp' ||
-        threshold.gameElapsedTime > scoring.gameElapsedTime * 2
+        threshold.gameElapsedTime > timeSys.gameElapsedTime * 2
     }
 
     const isMaster = scoring.score > threshold.score
-    if (isTimesUp) {
+    if (isGameTimesUp) {
       gameoverModalContent.innerHTML = `
+        <p>挑戰失敗</p>
+        <p>疲態盡顯，應當養精蓄銳！</p>
+        <div>
+          <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+          <button class="modal-btn" onclick="getPage('/')">返回</button>
+        </div>
+        `
+    } else if (isMaster) {
+      gameoverModalContent.innerHTML = `
+        <p>挑戰成功，獲得${scoring.score}分</p>
+        <p>恭喜榮登英雄榜</p>
+        <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
+          <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name" maxlength="10">
+          <span id="name-error"></span>
+          <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
+          <button type="submit" class="modal-btn" onclick="postRanking(event)">確定</button>
+        </form>
+        `
+    } else {
+      gameoverModalContent.innerHTML = `
+        <p>挑戰成功，獲得${scoring.score}分</p>
+        <div>
+          <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+          <button class="modal-btn" onclick="getPage('/')">返回</button>
+        </div>
+        `
+    }
+  } else if (result === 'pairTimesUp') {
+    gameoverModalContent.innerHTML = `
       <p>挑戰失敗</p>
-      <p>疲態盡顯，應當養精蓄銳！</p>
+      <p>拳腳無眼，切莫東張西望！</p>
       <div>
         <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
         <button class="modal-btn" onclick="getPage('/')">返回</button>
       </div>
       `
-    } else if (isMaster) {
-      gameoverModalContent.innerHTML = `
-      <p>挑戰成功，獲得${scoring.score}分</p>
-      <p>恭喜榮登英雄榜</p>
-      <form action="/ranking" method="POST" id="post-ranking" class="flex-container">
-        <input type="text" placeholder="英雄，請留名" value="" class="input-name" name="name" maxlength="10">
-        <span id="name-error"></span>
-        <input type="text" value="${scoring.score}" name="score" class="input-score invisible">
-        <button type="submit" class="modal-btn" onclick="postRanking(event)">確定</button>
-      </form>
-      `
-    } else {
-      gameoverModalContent.innerHTML = `
-    <p>挑戰成功，獲得${scoring.score}分</p>
-    <div>
-      <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
-      <button class="modal-btn" onclick="getPage('/')">返回</button>
-    </div>
-    `
-    }
-  } else if (result === 'pairTimesUp') {
-    gameoverModalContent.innerHTML = `
-    <p>挑戰失敗</p>
-    <p>拳腳無眼，切莫東張西望！</p>
-    <div>
-      <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
-      <button class="modal-btn" onclick="getPage('/')">返回</button>
-    </div>
-    `
   } else if (result === 'tooAccurate') {
     gameoverModalContent.innerHTML = `
-    <p>挑戰失敗</p>
-    <p>鴻運當頭，卻遭小人陷害</p>
-    <div>
-      <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
-      <button class="modal-btn" onclick="getPage('/')">返回</button>
-    </div>
-    `
+      <p>挑戰失敗</p>
+      <p>鴻運當頭，卻遭小人陷害</p>
+      <div>
+        <button class="modal-btn" onclick="getPage('/game?level=${level}')">再次挑戰</button>
+        <button class="modal-btn" onclick="getPage('/')">返回</button>
+      </div>
+      `
   }
+
+  rmLoadingMsg()
   gameoverModal.style.display = 'block'
 }
 
