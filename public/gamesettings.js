@@ -36,15 +36,15 @@ const timeSys = {
   gameElapsed: 0,
   startTimer: function () {
     if (levelSettings[level]['enableTimeSys']) {
-      this.pairStartingTime = Date.now()
+      this.pairStarting = Date.now()
     }
   },
   stopTimer: function () {
     if (levelSettings[level]['enableTimeSys']) {
-      this.pairEndingTime = Date.now()
-      this.pairElapsedTime = this.pairEndingTime - this.pairStartingTime
-      this.gameElapsedTime += this.pairElapsedTime
-      if (this.pairElapsedTime > levelSettings[level]['pairTimeLimit']) {
+      this.pairEnding = Date.now()
+      this.pairElapsed = this.pairEnding - this.pairStarting
+      this.gameElapsed += this.pairElapsed
+      if (this.pairElapsed > levelSettings[level]['pairTimeLimit']) {
         showGameoverModal('pairTimesUp')
       }
     }
